@@ -45,6 +45,10 @@ parser.add_argument(
     help='search directory or JSON file path (default: current directory)'
 )
 parser.add_argument(
+    '-R', '--recursive', action='store_true',
+    help='recurse through directories'
+)
+parser.add_argument(
     '--noplddt', dest='plddt', action='store_false',
     help='don\'t produce pLDDT plots'
 )
@@ -184,7 +188,11 @@ if __name__ == '__main__':
 
     for target_path in args.target:
         if target_path.is_dir():
-            for t in (target_path.glob(args.glob)):
-                process_json(t)
+            if args.recursive:
+                for t in (target_path.rglob(args.glob)):
+                    process_json(t)
+            else:
+                for t in (target_path.glob(args.glob)):
+                    process_json(t)
         else:
             process_json(target_path)
