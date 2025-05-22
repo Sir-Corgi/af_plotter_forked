@@ -60,7 +60,10 @@ parser.add_argument(
     '--glob', type=str, default='*confidences.json',
     help='JSON search glob (default: \'%(default)s\')'
 )
-
+parser.add_argument(
+    '--output', type=Path,
+    help='Directory to save the output plots (default: current directory)'
+)
 
 # functions ###################################################################
 
@@ -127,6 +130,12 @@ def plot_plddt(atom_plddts: list[int], atom_chain_ids: list[str]) -> None:
     )
     plt.tight_layout()
 
+# Save the plot to the specified output directory
+    output_file = outputdir.joinpath(
+        target.stem.rstrip(args.glob.replace('*','')) + 'pLDDT.png'
+    )
+    plt.savefig(output_file)
+    plt.close()
 
 def plot_pae(pae: list[int], token_chain_ids: list[str]) -> None:
     ''' Plot pLDDT data '''
@@ -150,6 +159,12 @@ def plot_pae(pae: list[int], token_chain_ids: list[str]) -> None:
     )
     plt.tight_layout()
 
+# Save the plot to the specified output directory
+    output_file = output_dir.joinpath(
+        target.stem.rstrip(args.glob.replace('*', '')) + 'PAE.png'
+    )
+    plt.savefig(output_file)
+    plt.close()
 
 def process_json(target: Path) -> None:
     ''' Scrape and plot pLDDT and PAE information from AlphaFold3 JSONs '''
@@ -186,13 +201,15 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    output_dir = args.output if args.output else Path.cwd()
+
     for target_path in args.target:
         if target_path.is_dir():
             if args.recursive:
                 for t in (target_path.rglob(args.glob)):
-                    process_json(t)
+                    process_json(t, output_dir)
             else:
                 for t in (target_path.glob(args.glob)):
-                    process_json(t)
+                    process_json(t, output_dir)
         else:
-            process_json(target_path)
+            process_json(target_path, output_dir)
